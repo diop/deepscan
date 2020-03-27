@@ -11,5 +11,11 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 def main():
     return 'Superscan - Medical Imaging x Deep Learning'
 
+@app.route('/upload-image', methods=['GET', 'POST'])
+def upload_image():
+    return render_template('public/upload_image.html')
+
+
+
 if __name__ == '__main__':
     app.run()
