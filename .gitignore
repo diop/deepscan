@@ -29,5 +29,6 @@ tensorflow/contrib/cmake/_build/
 /images
 /data
 *.whl
+venv/
 
 
