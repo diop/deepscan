@@ -8,24 +8,27 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
 cover = Image.open("assets/cover.png")
-model = load_model("models/superscan-model.h5")
-url = "https://covid-data-bucket.s3.amazonaws.com/covid-19/01E392EE-69F9-4E33-BFCE-E5C968654078.jpeg"
-
-
-# @st.cache
-# def load_image(img):
-#     im = Image.open(img)
-#     im.tobytes("xbm", "rgb")
-#     return im
+# model = load_model("models/superscan-model.h5")
+model = load_model("models/covid-19.h5")
 
 
 def detect_covid19(uploaded_xray):
-    st.write(uploaded_xray)
     img = image.img_to_array(uploaded_xray)
-    img = np.expand_dims(img, axis=0)
+    img = np.expand_dims(img / 255, axis=0)
     data = np.asarray(img, dtype="int32")
-    prediction = model.predict_classes(data)
-    return prediction
+    prediction = model.predict(data)
+    labels = {0: "Covid", 1: "Normal"}
+    label_indice = 0 if prediction[0, 0] <= 0.5 else 1
+    confidence_score = prediction[0, 0] if label_indice == 1 else 1 - prediction[0, 0]
+    if label_indice == 0:
+        st.error(
+            f" Patient Result : { labels[label_indice] } ,\n Confidence Score : { confidence_score }"
+        )
+    else:
+        st.success(
+            f" Patient Result : { labels[label_indice] } ,\n Confidence Score : { confidence_score }"
+        )
+    return ""
 
 
 def main():
@@ -40,7 +43,8 @@ def main():
         image_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
         if image_file is not None:
-            uploaded = image.load_img(image_file, target_size=(224, 224))
+            # TODO: Change image size to 331 by 331 for new covid-19 model
+            uploaded = image.load_img(image_file, target_size=(331, 331))
             st.image(uploaded, caption="Uploaded Image.", use_column_width=True)
 
         if st.button("Detect Covid-19"):
